@@ -6,3 +6,6 @@ This tool enables users to dynamically adjust portfolio allocations and immediat
 It integrates a backend API with a front-end interface, using modern web technologies to provide real-time insights and simulations to investors. 
 
 Perfect for personal finance enthusiasts and investors looking to optimize their dividend strategies.
+
+[Click here to view the architecture discussion](./architecture.md)
+
