@@ -14,14 +14,24 @@
   - **Assets Table**: Stores details like name, type, dividend yield.
   - **Portfolios Table**: Links assets to portfolios with allocation percentages.
 
-### 2. Backend
+## 2. Backend
 
-#### Flask
-- Python frameworks for building APIs.
-- **Endpoints**:
-  - `GET /portfolios`: Retrieve portfolio details.
-  - `POST /portfolio`: Update or create a portfolio.
-  - `GET /dividends`: Calculate dividends for given portfolio settings.
+### Flask
+- **Framework**: Flask is used as the Python framework for building the API.
+- **File Structure**:
+  - `app.py`: Initializes the Flask application and includes basic configurations.
+  - `models.py`: Contains all SQLAlchemy database models, defining the structure of the database.
+  - `routes.py`: Manages all the routes and endpoints, separating routing logic from the application setup for cleaner code management.
+
+### API Endpoints
+Endpoints are defined in `routes.py` to handle various functionalities:
+
+- `GET /portfolios`: Retrieve details of all portfolios. This endpoint fetches and returns data about every portfolio stored in the database.
+- `POST /portfolio`: Update an existing portfolio or create a new one. This endpoint handles both the creation of new portfolios and updating existing ones based on the provided data.
+- `GET /dividends/<int:portfolio_id>`: Calculate and return dividends for a given portfolio based on its settings and current assets.
+
+Each endpoint uses models defined in `models.py` to interact with the database, ensuring data persistence and integrity.
+
 
 ### 3. Frontend
 
