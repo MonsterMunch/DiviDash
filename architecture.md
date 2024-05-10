@@ -16,7 +16,7 @@
 
 ### 2. Backend
 
-#### Flask or FastAPI
+#### Flask
 - Python frameworks for building APIs.
 - **Endpoints**:
   - `GET /portfolios`: Retrieve portfolio details.
