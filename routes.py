@@ -1,5 +1,5 @@
 from flask import Blueprint, jsonify, request, abort
-from app import db
+from extensions import db
 from models import Portfolio, Asset, PortfolioAsset
 
 main = Blueprint('main', __name__)
