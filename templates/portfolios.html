@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Portfolios</title>
+</head>
+<body>
+    <h1>Portfolios</h1>
+    <ul>
+        {% for portfolio in portfolios %}
+            <li>{{ portfolio.name }}</li>
+        {% endfor %}
+    </ul>
+    <a href="/">Back to Index</a>
+</body>
+</html>
