@@ -35,7 +35,7 @@ Each endpoint uses models defined in `models.py` to interact with the database, 
 
 ### 3. Frontend
 
-#### React or Vue.js
+#### React
 - To build interactive UIs.
 - **Components**:
   - **Portfolio Editor**: Users can modify asset allocations.
@@ -85,8 +85,49 @@ Each endpoint uses models defined in `models.py` to interact with the database, 
   - Perform usability testing to gather user feedback.
   - Make final adjustments based on test results and feedback.
 
-## Markdown Tips for GitHub
 
-- **Use Headers**: Organize content with headers to make information easy to find.
+## Overview of the Flask Application Components:
+Flask App (app): The core of your web application, responsible for handling requests, routing them to the appropriate functions, and returning responses.
+SQLAlchemy (db): Serves as the Object-Relational Mapper (ORM) that facilitates interactions between Python objects and the database.
+Models (Asset, Portfolio): Define the database schema and data interactions.
+Blueprints (main): A way to organize a group of related views and other code. It’s like a mini-application that can be registered on the actual application.
+Routes/Views: Functions that respond to requests to different URLs.
+Templates: HTML files that allow Python-like expressions and control flow and are used to render the website content dynamically.
+
+## Explanation and Diagram:
+Flask Application (app): Initiates a Flask application instance, handles configurations (like the database URI), and registers blueprints and routes.
+SQLAlchemy (db): Links to the Flask app through the configuration and is responsible for all database interactions.
+Models (Asset, Portfolio): Define the structure of your database tables and include methods to represent object instances conveniently.
+Blueprint (main): Defines routes that are registered under a blueprint to organize code better.
+Routes/Views: Different endpoints (like /, /assets, /portfolios) defined either directly on the app or through a blueprint to handle various URLs.
+Templates: These are HTML files with placeholders for displaying data passed from the Flask views.
+### The diagram below illustrates these components and their relationships:
+
++------------------+
+| Flask Application|
++------------------+
+        ||
+        || Registers
+        \/
++------------------+    +---------------+    +---------------+
+|  Blueprint (main)|----|  Route (/)    |    | Route (/ports)|
++------------------+    +---------------+    +---------------+
+        ||
+        || Uses
+        \/
++------------------+    +----------------------+
+| SQLAlchemy (db)  |----| Models (Asset, Port) |
++------------------+    +----------------------+
+        ||
+        || Interacts With
+        \/
++------------------+
+| SQLite Database  |
++------------------+
+
+
+Clarifications:
+Routes defined in the blueprint and directly on the app: Notice that you have routes defined in both the blueprint and directly on the application. This setup works but can cause confusion if routes overlap. Make sure routes names and endpoints are managed carefully to avoid collisions.
+Rendering templates: render_template is used to generate HTML from templates. It fills placeholders in your templates with actual data, allowing dynamic content rendering based on the current state of the database.
 - **Code Blocks**: Use triple backticks ``` to format code blocks.
 - **Links and Images**: Use Markdown syntax to add links and images to enrich the documentation.
