@@ -103,6 +103,7 @@ Routes/Views: Different endpoints (like /, /assets, /portfolios) defined either 
 Templates: These are HTML files with placeholders for displaying data passed from the Flask views.
 ### The diagram below illustrates these components and their relationships:
 
+```
 +------------------+
 | Flask Application|
 +------------------+
@@ -124,7 +125,7 @@ Templates: These are HTML files with placeholders for displaying data passed fro
 +------------------+
 | SQLite Database  |
 +------------------+
-
+```
 
 Clarifications:
 Routes defined in the blueprint and directly on the app: Notice that you have routes defined in both the blueprint and directly on the application. This setup works but can cause confusion if routes overlap. Make sure routes names and endpoints are managed carefully to avoid collisions.
