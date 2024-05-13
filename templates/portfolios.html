@@ -6,11 +6,19 @@
 </head>
 <body>
     <h1>Portfolios</h1>
-    <ul>
+    <form method="POST" action="{{ url_for('portfolios') }}">
+        <label for="name">Portfolio Name:</label><br>
+        <input type="text" id="name" name="name" required><br>
+        <input type="submit" value="Create Portfolio">
+    </form>
+    {% if portfolios %}
         {% for portfolio in portfolios %}
-            <li>{{ portfolio.name }}</li>
+            <h2>{{ portfolio.name }}</h2>
+            <a href="{{ url_for('modify_portfolio', id=portfolio.id) }}" class="btn btn-primary">Modify</a>
+            <a href="{{ url_for('delete_portfolio', id=portfolio.id) }}" class="btn btn-danger">Delete</a>
         {% endfor %}
-    </ul>
-    <a href="/">Back to Index</a>
+    {% else %}
+        <p>No portfolios found. Create your first portfolio above.</p>
+    {% endif %}
 </body>
 </html>
