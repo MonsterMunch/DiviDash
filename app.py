@@ -6,13 +6,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dividash.db'
 db = SQLAlchemy(app)
 
-class Asset(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    value = db.Column(db.Float, nullable=False)
 
-    def __repr__(self):
-        return f"Asset('{self.name}', {self.value})"
 
 @app.route('/create_portfolio', methods=['POST'])
 def create_portfolio():
@@ -27,11 +21,20 @@ def create_portfolio():
 class Portfolio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
+    assets = db.relationship('Asset', backref='portfolio', lazy=True)
 
     def __repr__(self):
         return f"Portfolio('{self.name}')"
 
+class Asset(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    value = db.Column(db.Float, nullable=False)
+    portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolio.id'), nullable=True)
 
+    def __repr__(self):
+        return f"Asset('{self.name}', {self.value})"
+    
 with app.app_context():
     db.create_all()
 
@@ -77,13 +80,15 @@ def add_asset():
     if request.method == 'POST':
         name = request.form['name']
         value = request.form.get('value', type=float)
+        portfolio_id = request.form.get('portfolio_id', type=int)
         if name and value is not None:
-            new_asset = Asset(name=name, value=value)
+            new_asset = Asset(name=name, value=value, portfolio_id=portfolio_id)
             db.session.add(new_asset)
             db.session.commit()
             return redirect(url_for('assets'))
-    elif request.method == 'GET':
-        return render_template('add_asset.html')
+    else:
+        portfolios = Portfolio.query.all()
+        return render_template('add_asset.html', portfolios=portfolios)
     return 'Missing data', 400
 
 
@@ -133,3 +138,4 @@ def delete_portfolio(id):
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True)
+

@@ -1,16 +1,26 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Add Asset</title>
 </head>
 <body>
     <h1>Add Asset</h1>
-    <form method="POST">
-        <label for="name">Name:</label><br>
-        <input type="text" id="name" name="name" required><br>
-        <label for="value">Value:</label><br>
-        <input type="number" id="value" name="value" step="0.01" required><br>
-        <input type="submit" value="Submit">
+    <form action="{{ url_for('add_asset') }}" method="post">
+        <label for="name">Asset Name:</label>
+        <input type="text" id="name" name="name" required>
+        <br>
+        <label for="value">Value:</label>
+        <input type="number" id="value" name="value" step="0.01" required>
+        <br>
+        <label for="portfolio">Portfolio:</label>
+        <select id="portfolio" name="portfolio_id" required>
+            {% for portfolio in portfolios %}
+                <option value="{{ portfolio.id }}">{{ portfolio.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <button type="submit">Add Asset</button>
     </form>
 </body>
 </html>
