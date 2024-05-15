@@ -76,17 +76,24 @@ def add_asset():
             new_asset = Asset(name=name, value=value, portfolio_id=portfolio_id)
             db.session.add(new_asset)
             db.session.commit()
-            return redirect(url_for('assets'))
+            return redirect(url_for('modify_portfolio', id=portfolio_id))
     else:
         portfolios = Portfolio.query.all()
         return render_template('add_asset.html', portfolios=portfolios)
     return 'Missing data', 400
 
+@app.route('/delete_asset/<int:id>', methods=['POST'])
+def delete_asset(id):
+    asset = Asset.query.get_or_404(id)
+    portfolio_id = asset.portfolio_id
+    db.session.delete(asset)
+    db.session.commit()
+    return redirect(url_for('modify_portfolio', id=portfolio_id))
+
 @app.route('/portfolios', methods=['GET', 'POST'])
 def portfolios():
     if request.method == 'POST':
         name = request.form['name']
-        print(f"Received POST request with name: {name}")
         if name:
             new_portfolio = Portfolio(name=name)
             db.session.add(new_portfolio)
@@ -94,17 +101,10 @@ def portfolios():
         return redirect(url_for('portfolios'))
     else:
         portfolios = Portfolio.query.all()
-        print("Portfolios:", portfolios)
         return render_template('portfolios.html', portfolios=portfolios)
 
-@app.route('/modify_portfolio/<id>', methods=['GET', 'POST'])
+@app.route('/modify_portfolio/<int:id>', methods=['GET', 'POST'])
 def modify_portfolio(id):
-    print(f"modify_portfolio called with id={id}")
-    try:
-        id = int(id)
-    except ValueError:
-        return "Invalid portfolio id", 400
-
     portfolio = Portfolio.query.get_or_404(id)
     if request.method == 'POST':
         name = request.form['name']
