@@ -6,8 +6,6 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dividash.db'
 db = SQLAlchemy(app)
 
-
-
 @app.route('/create_portfolio', methods=['POST'])
 def create_portfolio():
     name = request.form['name']
@@ -38,9 +36,7 @@ class Asset(db.Model):
 with app.app_context():
     db.create_all()
 
-
 main = Blueprint('main', __name__)
-
 
 from werkzeug.routing import BuildError
 
@@ -56,11 +52,6 @@ def hello_world():
             url = None
         links.append((url, rule.endpoint))
     return render_template('index.html', current_time=current_time, links=links)
-
-# @main.route('/portfolios', methods=['GET'])
-# def get_portfolios():
-#     portfolios = Portfolio.query.all()
-#     return jsonify([{'id': p.id, 'name': p.name} for p in portfolios])
 
 app.register_blueprint(main)
 
@@ -90,12 +81,6 @@ def add_asset():
         portfolios = Portfolio.query.all()
         return render_template('add_asset.html', portfolios=portfolios)
     return 'Missing data', 400
-
-
-# @app.route('/portfolios')
-# def portfolios():
-#     portfolios = Portfolio.query.all()
-#     return render_template('portfolios.html', portfolios=portfolios)
 
 @app.route('/portfolios', methods=['GET', 'POST'])
 def portfolios():
@@ -138,4 +123,3 @@ def delete_portfolio(id):
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True)
-
