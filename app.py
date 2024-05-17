@@ -28,6 +28,8 @@ class Asset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     value = db.Column(db.Float, nullable=False)
+    payout_months = db.Column(db.String, nullable=True, default="1,4,7,10")  # Default to quarterly payouts
+    dividend_yield = db.Column(db.Float, nullable=False, default=0.01) # To be replaced with a real dividend yield
     portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolio.id'), nullable=True)
 
     def __repr__(self):
@@ -90,6 +92,10 @@ def delete_asset(id):
     db.session.commit()
     return redirect(url_for('modify_portfolio', id=portfolio_id))
 
+def calculate_dividend(asset):
+    return asset.value * (asset.dividend_yield / 100)  # Assuming dividend_yield is a percentage
+
+
 @app.route('/portfolios', methods=['GET', 'POST'])
 def portfolios():
     if request.method == 'POST':
@@ -99,9 +105,25 @@ def portfolios():
             db.session.add(new_portfolio)
             db.session.commit()
         return redirect(url_for('portfolios'))
-    else:
-        portfolios = Portfolio.query.all()
-        return render_template('portfolios.html', portfolios=portfolios)
+    
+    portfolios = Portfolio.query.all()
+    portfolio_data = []
+    for portfolio in portfolios:
+        portfolio_info = {
+            'id': portfolio.id,
+            'name': portfolio.name,
+            'assets': []
+        }
+        for asset in portfolio.assets:
+            dividend = calculate_dividend(asset)
+            portfolio_info['assets'].append({
+                'name': asset.name,
+                'value': asset.value,
+                'dividend_yield': asset.dividend_yield,
+                'dividend': dividend
+            })
+        portfolio_data.append(portfolio_info)
+    return render_template('portfolios.html', portfolios=portfolio_data)
 
 @app.route('/modify_portfolio/<int:id>', methods=['GET', 'POST'])
 def modify_portfolio(id):
@@ -120,6 +142,64 @@ def delete_portfolio(id):
     db.session.delete(portfolio)
     db.session.commit()
     return redirect(url_for('portfolios'))
+
+
+@app.route('/dividends/<int:portfolio_id>', methods=['GET'])
+def get_dividends(portfolio_id):
+    portfolio = Portfolio.query.get_or_404(portfolio_id)
+    dividends = []
+    for asset in portfolio.assets:
+        dividend = calculate_dividend(asset)
+        dividends.append({'name': asset.name, 'dividend': dividend})
+    return jsonify(dividends)
+
+
+
+
+@app.route('/portfolio/<int:portfolio_id>/dividends', methods=['GET'])
+def portfolio_dividends(portfolio_id):
+    portfolio = Portfolio.query.get_or_404(portfolio_id)
+    dividends = []
+    for asset in portfolio.assets:
+        dividend = calculate_dividend(asset)
+        dividends.append({'name': asset.name, 'dividend': dividend})
+    return render_template('portfolio_dividends.html', portfolio=portfolio, dividends=dividends)
+
+
+
+
+
+
+from collections import defaultdict
+
+@app.route('/dividend_calendar', methods=['GET'])
+def dividend_calendar():
+    portfolios = Portfolio.query.all()
+    monthly_dividends = defaultdict(list)
+
+    for portfolio in portfolios:
+        for asset in portfolio.assets:
+            payout_months = asset.payout_months or "1,4,7,10"  # Default to quarterly if None
+            for month in payout_months.split(','):
+                month = int(month)
+                monthly_dividends[month].append({
+                    'name': asset.name,
+                    'amount': calculate_dividend(asset) / len(payout_months.split(','))  # Equal payouts across specified months
+                })
+
+    # Convert defaultdict to regular dict for JSON serialization
+    monthly_dividends = dict(monthly_dividends)
+    return render_template('dividend_calendar.html', monthly_dividends=monthly_dividends)
+
+
+from calendar import month_name as month_names
+
+@app.context_processor
+def utility_processor():
+    def month_name(month_number):
+        return month_names[month_number]
+    return dict(month_name=month_name)
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True)
