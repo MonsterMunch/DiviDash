@@ -41,7 +41,7 @@
         <ul class="list-group">
             {% for asset in portfolio.assets %}
                 <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ asset.name }}: ${{ asset.value }}
+                    {{ asset.name }}: {{ asset.shares }} shares
                     <form method="post" action="{{ url_for('delete_asset', id=asset.id) }}" class="ml-2">
                         <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                     </form>
@@ -56,8 +56,8 @@
                 <input type="text" name="name" id="asset_name" class="form-control" required>
             </div>
             <div class="form-group">
-                <label for="asset_value">Asset Value</label>
-                <input type="number" step="0.01" name="value" id="asset_value" class="form-control" required>
+                <label for="asset_shares">Number of Shares</label>
+                <input type="number" step="0.01" name="shares" id="asset_shares" class="form-control" required>
             </div>
             <input type="hidden" name="portfolio_id" value="{{ portfolio.id }}">
             <button type="submit" class="btn btn-success">Add Asset</button>

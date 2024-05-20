@@ -1,7 +1,8 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Add Asset</title>
 </head>
 <body>
@@ -10,17 +11,17 @@
         <label for="name">Asset Name:</label>
         <input type="text" id="name" name="name" required>
         <br>
-        <label for="value">Value:</label>
-        <input type="number" id="value" name="value" step="0.01" required>
+        <label for="shares">Number of Shares:</label>
+        <input type="number" id="shares" name="shares" step="0.01" required>
         <br>
-        <label for="portfolio">Portfolio:</label>
-        <select id="portfolio" name="portfolio_id" required>
+        <label for="portfolio_id">Portfolio:</label>
+        <select id="portfolio_id" name="portfolio_id" required>
             {% for portfolio in portfolios %}
                 <option value="{{ portfolio.id }}">{{ portfolio.name }}</option>
             {% endfor %}
         </select>
         <br>
-        <button type="submit">Add Asset</button>
+        <input type="submit" value="Add Asset">
     </form>
 </body>
 </html>
