@@ -164,6 +164,7 @@ def portfolios():
             dividend_yield = fetch_dividend_yield(asset.name)
             if dividend_yield is None:
                 dividend_yield = asset.dividend_yield  # Use the stored value if not available from yfinance
+            dividend_yield = round(dividend_yield, 2)  # Round to two decimal places
             dividend = calculate_dividend(asset)
             portfolio_info['assets'].append({
                 'id': asset.id,  # Ensure the id is included
