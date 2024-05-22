@@ -1,27 +1,87 @@
-<!doctype html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add Asset</title>
-</head>
-<body>
-    <h1>Add Asset</h1>
-    <form action="{{ url_for('add_asset') }}" method="post">
-        <label for="name">Asset Name:</label>
-        <input type="text" id="name" name="name" required>
-        <br>
-        <label for="shares">Number of Shares:</label>
-        <input type="number" id="shares" name="shares" step="0.01" required>
-        <br>
-        <label for="portfolio_id">Portfolio:</label>
-        <select id="portfolio_id" name="portfolio_id" required>
+{% extends "base.html" %}
+
+{% block title %}Add Asset{% endblock %}
+
+{% block content %}
+<h1>Add Asset</h1>
+<form method="POST" action="{{ url_for('add_asset') }}">
+    <div class="form-group">
+        <label for="name">Asset Name</label>
+        <input type="text" class="form-control" id="name" name="name" required>
+    </div>
+    <div class="form-group">
+        <label for="shares">Number of Shares</label>
+        <input type="number" step="0.01" class="form-control" id="shares" name="shares" required>
+    </div>
+    <div class="form-group">
+        <label for="current_price">Current Price</label>
+        <input type="number" step="0.01" class="form-control" id="current_price" name="current_price">
+    </div>
+    <div class="form-group">
+        <label for="purchase_price">Purchase Price</label>
+        <input type="number" step="0.01" class="form-control" id="purchase_price" name="purchase_price">
+    </div>
+    <div class="form-group">
+        <label for="purchase_date">Purchase Date</label>
+        <input type="date" class="form-control" id="purchase_date" name="purchase_date">
+    </div>
+    <div class="form-group">
+        <label for="sector">Sector</label>
+        <input type="text" class="form-control" id="sector" name="sector">
+    </div>
+    <div class="form-group">
+        <label for="annual_dividend">Annual Dividend</label>
+        <input type="number" step="0.01" class="form-control" id="annual_dividend" name="annual_dividend">
+    </div>
+    <div class="form-group">
+        <label for="dividend_yield">Dividend Yield (%)</label>
+        <input type="number" step="0.01" class="form-control" id="dividend_yield" name="dividend_yield" required>
+    </div>
+    <div class="form-group">
+        <label for="dividend_frequency">Dividend Frequency</label>
+        <select class="form-control" id="dividend_frequency" name="dividend_frequency" required>
+            <option value="monthly">Monthly</option>
+            <option value="quarterly">Quarterly</option>
+            <option value="semi-annually">Semi-Annually</option>
+            <option value="annually">Annually</option>
+        </select>
+    </div>
+    <div class="form-group">
+        <label for="dividend_growth">Dividend Growth (%)</label>
+        <input type="number" step="0.01" class="form-control" id="dividend_growth" name="dividend_growth" required>
+    </div>
+    <div class="form-group">
+        <label for="last_dividend_amount">Last Dividend Amount</label>
+        <input type="number" step="0.01" class="form-control" id="last_dividend_amount" name="last_dividend_amount" required>
+    </div>
+    <div class="form-group">
+        <label for="last_dividend_date">Last Dividend Date</label>
+        <input type="date" class="form-control" id="last_dividend_date" name="last_dividend_date" required>
+    </div>
+    <div class="form-group">
+        <label for="ex_dividend_date">Ex-Dividend Date</label>
+        <input type="date" class="form-control" id="ex_dividend_date" name="ex_dividend_date" required>
+    </div>
+    <div class="form-group">
+        <label for="payment_date">Payment Date</label>
+        <input type="date" class="form-control" id="payment_date" name="payment_date" required>
+    </div>
+    <div class="form-group">
+        <label for="currency">Currency</label>
+        <input type="text" class="form-control" id="currency" name="currency">
+    </div>
+    <div class="form-group">
+        <label for="dividend_payout_ratio">Dividend Payout Ratio</label>
+        <input type="number" step="0.01" class="form-control" id="dividend_payout_ratio" name="dividend_payout_ratio">
+    </div>
+    <div class="form-group">
+        <label for="portfolio_id">Portfolio</label>
+        <select class="form-control" id="portfolio_id" name="portfolio_id" required>
             {% for portfolio in portfolios %}
                 <option value="{{ portfolio.id }}">{{ portfolio.name }}</option>
             {% endfor %}
         </select>
-        <br>
-        <input type="submit" value="Add Asset">
-    </form>
-</body>
-</html>
+    </div>
+    <button type="submit" class="btn btn-primary">Add Asset</button>
+</form>
+{% endblock %}

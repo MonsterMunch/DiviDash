@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Assets{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Assets</h1>
+    {% if assets %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Shares</th>
+                    <th>Current Price</th>
+                    <th>Purchase Price</th>
+                    <th>Sector</th>
+                    <th>Annual Dividend</th>
+                    <th>Dividend Yield</th>
+                    <th>Dividend Frequency</th>
+                    <th>Dividend Growth</th>
+                    <th>Last Dividend Amount</th>
+                    <th>Last Dividend Date</th>
+                    <th>Ex-Dividend Date</th>
+                    <th>Payment Date</th>
+                    <th>Currency</th>
+                    <th>Dividend Payout Ratio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in assets %}
+                <tr>
+                    <td>{{ asset.name }}</td>
+                    <td>{{ asset.shares }}</td>
+                    <td>{{ asset.current_price }}</td>
+                    <td>{{ asset.purchase_price }}</td>
+                    <td>{{ asset.sector }}</td>
+                    <td>{{ asset.annual_dividend }}</td>
+                    <td>{{ asset.dividend_yield }}%</td>
+                    <td>{{ asset.dividend_frequency }}</td>
+                    <td>{{ asset.dividend_growth }}%</td>
+                    <td>{{ asset.last_dividend_amount }}</td>
+                    <td>{{ asset.last_dividend_date }}</td>
+                    <td>{{ asset.ex_dividend_date }}</td>
+                    <td>{{ asset.payment_date }}</td>
+                    <td>{{ asset.currency }}</td>
+                    <td>{{ asset.dividend_payout_ratio }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No assets available.</p>
+    {% endif %}
+</div>
+{% endblock %}

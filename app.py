@@ -22,6 +22,9 @@ app.logger.addHandler(handler)
 app.logger.setLevel(logging.INFO)  # Set to INFO to capture more detailed logs
 
 # Define the Portfolio and Asset models
+from flask_sqlalchemy import SQLAlchemy
+# db = SQLAlchemy()
+
 class Portfolio(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -30,15 +33,37 @@ class Portfolio(db.Model):
     def __repr__(self):
         return f"Portfolio('{self.name}')"
 
+
+
 class Asset(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     shares = db.Column(db.Float, nullable=False)  # Number of shares
-    dividend_yield = db.Column(db.Float, nullable=False, default=0.01) # To be replaced with a real dividend yield
+    current_price = db.Column(db.Float, nullable=True)  # Current market price of the asset
+    purchase_price = db.Column(db.Float, nullable=True)  # Purchase price of the asset
+    purchase_date = db.Column(db.Date, nullable=True)  # Purchase date of the asset
+    sector = db.Column(db.String(100), nullable=True)  # Sector or industry of the asset
+    annual_dividend = db.Column(db.Float, nullable=True)  # Annual dividend paid per share
+    dividend_yield = db.Column(db.Float, nullable=False, default=0.01)  # Dividend yield
+    dividend_frequency = db.Column(db.String(50), nullable=False, default='quarterly')  # Dividend frequency
+    dividend_growth = db.Column(db.Float, nullable=False, default=0.0)  # Dividend growth rate
+    last_dividend_amount = db.Column(db.Float, nullable=False, default=0.0)  # Last dividend amount per share
+    last_dividend_date = db.Column(db.Date, nullable=True)  # Last dividend payment date
+    ex_dividend_date = db.Column(db.Date, nullable=True)  # Ex-dividend date
+    payment_date = db.Column(db.Date, nullable=True)  # Payment date
+    currency = db.Column(db.String(10), nullable=True)  # Currency of the asset and dividends
+    dividend_payout_ratio = db.Column(db.Float, nullable=True)  # Dividend payout ratio
     portfolio_id = db.Column(db.Integer, db.ForeignKey('portfolio.id'), nullable=True)
 
     def __repr__(self):
-        return f"Asset('{self.name}', {self.shares} shares)"
+        return (f"Asset('{self.name}', {self.shares} shares, {self.dividend_yield}% yield, "
+                f"{self.dividend_frequency}, {self.dividend_growth}% growth, "
+                f"{self.last_dividend_amount} last dividend, {self.last_dividend_date} last dividend date, "
+                f"{self.ex_dividend_date} ex-dividend date, {self.payment_date} payment date, "
+                f"{self.current_price} current price, {self.purchase_price} purchase price, "
+                f"{self.purchase_date} purchase date, {self.sector} sector, {self.annual_dividend} annual dividend, "
+                f"{self.currency} currency, {self.dividend_payout_ratio} payout ratio)")
+
 
 # Initialize the database
 with app.app_context():
@@ -75,10 +100,7 @@ def index():
     portfolios = Portfolio.query.all()
     return render_template('index.html', assets=assets, portfolios=portfolios)
 
-@app.route('/assets')
-def assets():
-    assets = Asset.query.all()
-    return render_template('assets.html', assets=assets)
+
 
 def fetch_dividend_yield(asset_name):
     stock = yf.Ticker(asset_name)
@@ -89,42 +111,88 @@ def fetch_dividend_yield(asset_name):
         return None
     return dividend_yield
 
+@app.route('/assets')
+def assets():
+    assets = Asset.query.all()
+    return render_template('assets.html', assets=assets)
 
 @app.route('/add_asset', methods=['GET', 'POST'])
 def add_asset():
     if request.method == 'POST':
+        # Retrieve form data
         name = request.form.get('name')
-        shares_str = request.form.get('shares')  # Get the raw string value
+        shares_str = request.form.get('shares')
+        current_price_str = request.form.get('current_price')
+        purchase_price_str = request.form.get('purchase_price')
+        purchase_date_str = request.form.get('purchase_date')
+        sector = request.form.get('sector')
+        annual_dividend_str = request.form.get('annual_dividend')
+        dividend_yield_str = request.form.get('dividend_yield')
+        dividend_frequency = request.form.get('dividend_frequency')
+        dividend_growth_str = request.form.get('dividend_growth')
+        last_dividend_amount_str = request.form.get('last_dividend_amount')
+        last_dividend_date_str = request.form.get('last_dividend_date')
+        ex_dividend_date_str = request.form.get('ex_dividend_date')
+        payment_date_str = request.form.get('payment_date')
+        currency = request.form.get('currency')
+        dividend_payout_ratio_str = request.form.get('dividend_payout_ratio')
         portfolio_id = request.form.get('portfolio_id', type=int)
 
-        # Log the retrieved form data before conversion
-        app.logger.info(f"Raw form data - Name: {name}, Shares: {shares_str}, Portfolio ID: {portfolio_id}")
-
-        try:
-            shares = float(shares_str) if shares_str else None
-        except ValueError:
-            shares = None
-            app.logger.warning('Invalid number of shares provided')
-
-        app.logger.info(f"Converted form data - Name: {name}, Shares: {shares}, Portfolio ID: {portfolio_id}")
+        # Convert numerical and date fields
+        shares = float(shares_str) if shares_str else None
+        current_price = float(current_price_str) if current_price_str else None
+        purchase_price = float(purchase_price_str) if purchase_price_str else None
+        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d') if purchase_date_str else None
+        annual_dividend = float(annual_dividend_str) if annual_dividend_str else None
+        dividend_yield = float(dividend_yield_str) if dividend_yield_str else 0.01
+        dividend_growth = float(dividend_growth_str) if dividend_growth_str else 0.0
+        last_dividend_amount = float(last_dividend_amount_str) if last_dividend_amount_str else 0.0
+        last_dividend_date = datetime.strptime(last_dividend_date_str, '%Y-%m-%d') if last_dividend_date_str else None
+        ex_dividend_date = datetime.strptime(ex_dividend_date_str, '%Y-%m-%d') if ex_dividend_date_str else None
+        payment_date = datetime.strptime(payment_date_str, '%Y-%m-%d') if payment_date_str else None
+        dividend_payout_ratio = float(dividend_payout_ratio_str) if dividend_payout_ratio_str else None
 
         if name and shares is not None and portfolio_id is not None:
-            dividend_yield = fetch_dividend_yield(name)
-            if dividend_yield is None:
-                app.logger.info(f"No dividend yield available for {name}")
-                return 'Asset does not pay a dividend or data is unavailable', 400  # Handle non-dividend paying assets
-            new_asset = Asset(name=name, shares=shares, portfolio_id=portfolio_id, dividend_yield=dividend_yield)
+            new_asset = Asset(
+                name=name,
+                shares=shares,
+                current_price=current_price,
+                purchase_price=purchase_price,
+                purchase_date=purchase_date,
+                sector=sector,
+                annual_dividend=annual_dividend,
+                dividend_yield=dividend_yield,
+                dividend_frequency=dividend_frequency,
+                dividend_growth=dividend_growth,
+                last_dividend_amount=last_dividend_amount,
+                last_dividend_date=last_dividend_date,
+                ex_dividend_date=ex_dividend_date,
+                payment_date=payment_date,
+                currency=currency,
+                dividend_payout_ratio=dividend_payout_ratio,
+                portfolio_id=portfolio_id
+            )
             db.session.add(new_asset)
             db.session.commit()
-            app.logger.info(f"Added new asset: {new_asset}")
+            app.logger.info(
+                f"Added new asset: {new_asset.name}, Shares: {new_asset.shares}, Current Price: {new_asset.current_price}, "
+                f"Purchase Price: {new_asset.purchase_price}, Purchase Date: {new_asset.purchase_date}, Sector: {new_asset.sector}, "
+                f"Annual Dividend: {new_asset.annual_dividend}, Dividend Yield: {new_asset.dividend_yield}, "
+                f"Dividend Frequency: {new_asset.dividend_frequency}, Dividend Growth: {new_asset.dividend_growth}, "
+                f"Last Dividend Amount: {new_asset.last_dividend_amount}, Last Dividend Date: {new_asset.last_dividend_date}, "
+                f"Ex-Dividend Date: {new_asset.ex_dividend_date}, Payment Date: {new_asset.payment_date}, "
+                f"Currency: {new_asset.currency}, Dividend Payout Ratio: {new_asset.dividend_payout_ratio}, "
+                f"Portfolio ID: {new_asset.portfolio_id}"
+            )
             return redirect(url_for('modify_portfolio', id=portfolio_id))
         else:
-            app.logger.warning('Missing data: Name, Shares, or Portfolio ID not provided')
-            return 'Missing data', 400  # Ensure all fields are present
+            app.logger.warning('Missing data: Name, Shares, Portfolio ID not provided or invalid')
+            return 'Missing data', 400
     else:
         portfolios = Portfolio.query.all()
         app.logger.info(f"Portfolios: {portfolios}")
-        return render_template('modify_portfolio.html', portfolios=portfolios)
+        return render_template('add_asset.html', portfolios=portfolios)
+
 
 
 @app.route('/delete_asset/<int:id>', methods=['POST'])
