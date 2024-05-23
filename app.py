@@ -7,10 +7,32 @@ from logging.handlers import RotatingFileHandler
 import yfinance as yf
 import calendar
 import json
+import os
+import secrets
+
+from flask_wtf.csrf import CSRFProtect
+
+ 
+
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
+app.config['SECRET_KEY'] = secrets.token_hex(16)  # Generates a random secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///dividash.db'
 db = SQLAlchemy(app)
+
+from datetime import datetime
+
+from datetime import datetime
+
+@app.template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt='%Y-%m-%d'):
+    if date == 'today':
+        date = datetime.today()  # Get the current date
+    else:
+        date = datetime.strptime(date, '%Y-%m-%d')  # Convert string to datetime
+    native = date.replace(tzinfo=None)
+    return native.strftime(fmt)
 
 # Setup logging
 log_file = 'app.log'
@@ -118,6 +140,8 @@ def assets():
 
 @app.route('/add_asset', methods=['GET', 'POST'])
 def add_asset():
+    form = FlaskForm()  # Place this line at the beginning of the function
+
     if request.method == 'POST':
         # Retrieve form data
         name = request.form.get('name')
@@ -191,8 +215,7 @@ def add_asset():
     else:
         portfolios = Portfolio.query.all()
         app.logger.info(f"Portfolios: {portfolios}")
-        return render_template('add_asset.html', portfolios=portfolios)
-
+        return render_template('add_asset.html', form=form, portfolios=portfolios)
 
 
 @app.route('/delete_asset/<int:id>', methods=['POST'])
@@ -208,12 +231,11 @@ def calculate_dividend(asset):
 
 @app.route('/portfolios', methods=['GET', 'POST'])
 def portfolios():
-    if request.method == 'POST':
-        name = request.form['name']
-        if name:
-            new_portfolio = Portfolio(name=name)
-            db.session.add(new_portfolio)
-            db.session.commit()
+    form = PortfolioForm()
+    if form.validate_on_submit():
+        new_portfolio = Portfolio(name=form.name.data)
+        db.session.add(new_portfolio)
+        db.session.commit()
         return redirect(url_for('portfolios'))
     
     portfolios = Portfolio.query.all()
@@ -243,7 +265,8 @@ def portfolios():
                 'dividend': dividend
             })
         portfolio_data.append(portfolio_info)
-    return render_template('portfolios.html', portfolios=portfolio_data)
+    return render_template('portfolios.html', portfolios=portfolio_data, form=form)
+
 
 
 
@@ -345,7 +368,14 @@ def dividend_calendar():
 
     return render_template('dividend_calendar.html', monthly_dividends=final_dividends)
 
-# Define your models and other routes here as before...
+from flask_wtf import FlaskForm
+from wtforms import StringField, SubmitField
+from wtforms.validators import DataRequired
+
+class PortfolioForm(FlaskForm):
+    name = StringField('Portfolio Name', validators=[DataRequired()])
+    submit = SubmitField('Add Portfolio')
+
 
 if __name__ == "__main__":
     app.run(debug=True, use_reloader=True)
